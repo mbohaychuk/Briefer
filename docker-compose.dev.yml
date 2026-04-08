@@ -1,0 +1,11 @@
+# docker-compose.dev.yml — development overrides
+services:
+  web-api:
+    ports:
+      - "5000:8080"
+      - "5001:5001"  # Debug port
+
+  ml-service:
+    ports:
+      - "8000:8000"  # Only exposed in dev
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
