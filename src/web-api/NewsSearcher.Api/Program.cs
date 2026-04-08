@@ -60,11 +60,13 @@ builder.Services.AddHttpClient("MlService", client =>
 
 var app = builder.Build();
 
-if (!app.Environment.IsEnvironment("Testing"))
+using (var scope = app.Services.CreateScope())
 {
-    using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
+    if (app.Environment.IsEnvironment("Testing"))
+        db.Database.EnsureCreated();
+    else
+        db.Database.Migrate();
 }
 
 app.UseAuthentication();
