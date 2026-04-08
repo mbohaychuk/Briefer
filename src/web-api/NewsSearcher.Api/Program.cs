@@ -58,6 +58,8 @@ builder.Services.AddHttpClient("MlService", client =>
     options.CircuitBreaker.BreakDuration = TimeSpan.FromSeconds(30);
 });
 
+builder.Services.AddScoped<MlServiceClient>();
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
