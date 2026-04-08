@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); c=d.get\\('message',{}\\).get\\('content',[]\\); [print\\(x.get\\('text',''\\)\\) for x in c if x.get\\('type'\\)=='text']\")",
+      "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); c=d.get\\('message',{}\\).get\\('content',[]\\); [print\\(x.get\\('text',''\\)\\) for x in c if x.get\\('type'\\)=='text']\")",
+      "Bash(python3 -c \" import json,sys d=json.load\\(sys.stdin\\) c=d.get\\('message',{}\\).get\\('content',[]\\) for x in c: if x.get\\('type'\\)=='text': print\\(x['text'][:300]\\) \" echo \"\" done)",
+      "Bash(python3 -c \" import json,sys d=json.load\\(sys.stdin\\) c=d.get\\('message',{}\\).get\\('content',[]\\) for x in c: if x.get\\('type'\\)=='text': print\\(x['text']\\) \")",
+      "Bash(docker compose:*)",
+      "Bash(docker info:*)",
+      "Bash(docker context ls:*)",
+      "Bash(docker context:*)",
+      "Bash(dotnet new:*)",
+      "Bash(dotnet add:*)",
+      "Bash(dotnet build:*)",
+      "Bash(dotnet:*)",
+      "Bash(python -m venv .venv)",
+      "Bash(.venv/Scripts/activate)",
+      "Bash(pip install:*)",
+      "Bash(.venv/Scripts/pip install:*)",
+      "Bash(.venv/Scripts/pytest tests/test_health.py -v)"
+    ]
+  }
+}
