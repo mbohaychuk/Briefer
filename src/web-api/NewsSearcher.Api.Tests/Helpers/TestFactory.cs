@@ -12,13 +12,21 @@ public class TestFactory : WebApplicationFactory<Program>
     {
         builder.ConfigureServices(services =>
         {
-            var descriptor = services.SingleOrDefault(
-                d => d.ServiceType == typeof(DbContextOptions<AppDbContext>));
-            if (descriptor != null)
+            // Remove all DbContext options registrations to avoid dual-provider
+            // conflict between Npgsql (from Program.cs) and InMemory (test)
+            var descriptorsToRemove = services.Where(d =>
+                d.ServiceType == typeof(AppDbContext)
+                || d.ServiceType.FullName?.Contains("DbContextOptions") == true
+            ).ToList();
+
+            foreach (var descriptor in descriptorsToRemove)
                 services.Remove(descriptor);
 
+            // Capture DB name OUTSIDE the lambda — Guid.NewGuid() inside
+            // would create a different database per request
+            var dbName = "TestDb_" + Guid.NewGuid();
             services.AddDbContext<AppDbContext>(options =>
-                options.UseInMemoryDatabase("TestDb_" + Guid.NewGuid()));
+                options.UseInMemoryDatabase(dbName));
         });
 
         builder.UseEnvironment("Testing");
