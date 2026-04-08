@@ -1,0 +1,20 @@
+{
+  "feeds": [
+    {
+      "url": "https://www.cbc.ca/webfeed/rss/rss-topstories",
+      "name": "CBC Top Stories"
+    },
+    {
+      "url": "https://rss.cbc.ca/lineup/canada.xml",
+      "name": "CBC Canada"
+    },
+    {
+      "url": "https://feeds.bbci.co.uk/news/rss.xml",
+      "name": "BBC News"
+    },
+    {
+      "url": "https://www.theguardian.com/world/rss",
+      "name": "The Guardian World"
+    }
+  ]
+}
