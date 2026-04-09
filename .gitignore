@@ -9,16 +9,32 @@ appsettings.Development.json
 __pycache__/
 *.pyc
 .venv/
+venv/
 *.egg-info/
+dist/
+build/
+*.egg
 
 # Environment
 .env
+.env.*
+!.env.example
+
+# ML models / caches
+*.pt
+*.bin
+*.onnx
+.cache/
 
 # IDE
 .vs/
 .vscode/
 .idea/
+*.swp
 
 # OS
 Thumbs.db
 .DS_Store
+
+# Logs
+*.log
