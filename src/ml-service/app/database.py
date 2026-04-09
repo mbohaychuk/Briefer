@@ -42,5 +42,39 @@ def init_schema():
         conn.execute(
             "CREATE INDEX IF NOT EXISTS idx_articles_url ON articles (url)"
         )
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS user_articles (
+                user_id UUID NOT NULL,
+                article_id UUID NOT NULL,
+                status TEXT NOT NULL DEFAULT 'ready',
+                vector_score REAL,
+                rerank_score REAL,
+                llm_score REAL,
+                display_score REAL,
+                summary TEXT,
+                explanation TEXT,
+                priority TEXT,
+                route TEXT,
+                profile_version INTEGER NOT NULL DEFAULT 1,
+                scored_at TIMESTAMPTZ,
+                briefed_at TIMESTAMPTZ,
+                seen_at TIMESTAMPTZ,
+                feedback TEXT,
+                feedback_note TEXT,
+                feedback_at TIMESTAMPTZ,
+                PRIMARY KEY (user_id, article_id),
+                FOREIGN KEY (article_id) REFERENCES articles(id)
+            )
+            """
+        )
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_user_articles_user_status "
+            "ON user_articles(user_id, status)"
+        )
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_user_articles_display_score "
+            "ON user_articles(user_id, display_score DESC)"
+        )
         conn.commit()
     logger.info("Database schema initialized")
