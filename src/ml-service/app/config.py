@@ -19,5 +19,29 @@ class Settings:
         )
         self.feeds_path = os.environ.get("FEEDS_PATH", "feeds.json")
 
+        # Scoring pipeline settings
+        self.ollama_base_url = os.environ.get(
+            "OLLAMA_BASE_URL", "http://localhost:11434"
+        )
+        self.ollama_model = os.environ.get("OLLAMA_MODEL", "gemma4")
+        self.ollama_timeout = int(os.environ.get("OLLAMA_TIMEOUT", "120"))
+        self.reranker_model = os.environ.get(
+            "RERANKER_MODEL", "BAAI/bge-reranker-v2-m3"
+        )
+        self.retriever_top_k = int(os.environ.get("RETRIEVER_TOP_K", "50"))
+        self.retriever_date_days = int(
+            os.environ.get("RETRIEVER_DATE_DAYS", "7")
+        )
+        self.scoring_llm_threshold = int(
+            os.environ.get("SCORING_LLM_THRESHOLD", "5")
+        )
+        self.scoring_clear_pass_count = int(
+            os.environ.get("SCORING_CLEAR_PASS_COUNT", "5")
+        )
+        self.scoring_safety_net_count = int(
+            os.environ.get("SCORING_SAFETY_NET_COUNT", "12")
+        )
+        self.profiles_path = os.environ.get("PROFILES_PATH", "profiles.json")
+
 
 settings = Settings()

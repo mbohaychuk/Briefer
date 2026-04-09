@@ -1,0 +1,22 @@
+{
+  "profiles": [
+    {
+      "user_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "name": "Alberta Policy Analyst (Test)",
+      "interests": [
+        {
+          "label": "Primary Role",
+          "text": "I'm an environmental analyst for the Government of Alberta, working in the oil and gas branch. I need to stay informed about environmental policy, regulations, and incidents that could affect Alberta's energy sector."
+        },
+        {
+          "label": "Wildlife Mandate",
+          "text": "My department is responsible for managing deer populations in the Peace River region of northern Alberta. This is due to a historical mandate. I need to know about anything affecting deer in this region: disease, habitat disruption, predator changes, climate impact, and similar issues in neighboring provinces that could spread."
+        },
+        {
+          "label": "Regional Scope",
+          "text": "I primarily focus on Alberta but need awareness of British Columbia, Saskatchewan, and federal Canadian developments that could have cross-border policy implications."
+        }
+      ]
+    }
+  ]
+}
