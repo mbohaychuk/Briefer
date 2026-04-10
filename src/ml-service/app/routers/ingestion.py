@@ -1,5 +1,6 @@
 import json
 import logging
+import threading
 from dataclasses import asdict
 from datetime import datetime, timezone
 
@@ -14,7 +15,7 @@ router = APIRouter(prefix="/api/ingestion", tags=["ingestion"])
 
 _last_result: IngestionResult | None = None
 _last_run_at: datetime | None = None
-_running = False
+_lock = threading.Lock()
 
 
 def load_feeds(path: str = "feeds.json") -> list[dict]:
@@ -24,29 +25,28 @@ def load_feeds(path: str = "feeds.json") -> list[dict]:
 
 @router.post("/trigger")
 async def trigger_ingestion():
-    global _last_result, _last_run_at, _running
+    global _last_result, _last_run_at
 
-    if _running:
+    if not _lock.acquire(blocking=False):
         return {"status": "already_running"}
 
-    _running = True
     try:
         pipeline = get_pipeline()
         result = pipeline.run()
         _last_result = result
         _last_run_at = datetime.now(timezone.utc)
         return {"status": "completed", "result": asdict(result)}
-    except Exception as e:
+    except Exception:
         logger.exception("Ingestion run failed")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal error during ingestion")
     finally:
-        _running = False
+        _lock.release()
 
 
 @router.get("/status")
 async def get_status():
     return {
-        "running": _running,
+        "running": _lock.locked(),
         "last_result": asdict(_last_result) if _last_result else None,
         "last_run_at": _last_run_at.isoformat() if _last_run_at else None,
     }

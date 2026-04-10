@@ -111,3 +111,49 @@ def test_chat_without_tool_calls(mock_httpx):
     )
     assert result["content"] == "Just a response"
     assert result["tool_calls"] is None
+
+
+@patch("app.reasoning.providers.ollama.httpx")
+def test_generate_raises_on_http_error(mock_httpx):
+    """generate() should propagate HTTPStatusError from httpx."""
+    import httpx as real_httpx
+
+    mock_response = MagicMock()
+    mock_response.status_code = 500
+    error = real_httpx.HTTPStatusError(
+        "Server Error",
+        request=MagicMock(),
+        response=mock_response,
+    )
+    mock_httpx.post.return_value.raise_for_status.side_effect = error
+
+    from app.reasoning.providers.ollama import OllamaProvider
+
+    provider = OllamaProvider(
+        base_url="http://localhost:11434", model="gemma4", timeout=30
+    )
+    import pytest
+
+    with pytest.raises(real_httpx.HTTPStatusError):
+        provider.generate("Say hello")
+
+
+@patch("app.reasoning.providers.ollama.httpx")
+def test_generate_json_raises_on_invalid_json(mock_httpx):
+    """generate_json() should raise when the LLM returns non-JSON text."""
+    import json
+
+    mock_response = MagicMock()
+    mock_response.json.return_value = {"response": "this is not json at all"}
+    mock_response.raise_for_status = MagicMock()
+    mock_httpx.post.return_value = mock_response
+
+    from app.reasoning.providers.ollama import OllamaProvider
+
+    provider = OllamaProvider(
+        base_url="http://localhost:11434", model="gemma4", timeout=30
+    )
+    import pytest
+
+    with pytest.raises(json.JSONDecodeError):
+        provider.generate_json("Score this")

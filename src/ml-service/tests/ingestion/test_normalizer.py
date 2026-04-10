@@ -1,5 +1,7 @@
 from datetime import datetime, timezone
 
+import pytest
+
 from app.ingestion.models import RawArticle
 from app.ingestion.normalizer import content_hash, normalize_article, normalize_text
 
@@ -55,3 +57,35 @@ def test_normalize_article_handles_none_author():
     raw = RawArticle(url="http://example.com", title="Title", source_name="Src")
     result = normalize_article(raw, "Article text.")
     assert result.author_normalized is None
+
+
+@pytest.mark.parametrize(
+    "input_text,expected",
+    [
+        ("Hello World", "hello world"),
+        ("Hello, World!", "hello world"),
+        ("  hello   world  ", "hello world"),
+        ("café résumé", "cafe resume"),
+        ("", ""),
+        ("\u4f60\u597d\u4e16\u754c", "\u4f60\u597d\u4e16\u754c"),  # Non-Latin text preserved
+    ],
+)
+def test_normalize_text(input_text, expected):
+    assert normalize_text(input_text) == expected
+
+
+@pytest.mark.parametrize(
+    "text_a,text_b,should_match",
+    [
+        ("Hello World", "hello world", True),       # Case insensitive
+        ("Hello World", "Hello World", True),        # Identical
+        ("Hello", "World", False),                   # Different content
+        ("", "", True),                              # Both empty
+        ("abc", "abc", True),                        # Short identical
+    ],
+)
+def test_content_hash_parametrized(text_a, text_b, should_match):
+    if should_match:
+        assert content_hash(text_a) == content_hash(text_b)
+    else:
+        assert content_hash(text_a) != content_hash(text_b)

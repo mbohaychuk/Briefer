@@ -115,3 +115,18 @@ def test_pipeline_multiple_articles():
     assert result.extracted == 3
     assert result.new == 3
     assert result.embedded == 3
+
+
+def test_get_pipeline_raises_when_not_initialized():
+    """get_pipeline() should raise RuntimeError before init."""
+    import pytest
+
+    import app.ingestion.pipeline as pipeline_mod
+
+    saved = pipeline_mod._pipeline_instance
+    pipeline_mod._pipeline_instance = None
+    try:
+        with pytest.raises(RuntimeError, match="not initialized"):
+            pipeline_mod.get_pipeline()
+    finally:
+        pipeline_mod._pipeline_instance = saved

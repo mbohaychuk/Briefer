@@ -91,3 +91,53 @@ def test_filter_deduplicates_within_batch():
     ]
     result = dedup.filter_duplicates(articles)
     assert len(result) == 1
+
+
+def test_empty_content_hash_skips_hash_check():
+    """An article with content_hash='' should skip the content hash duplicate check."""
+    repo = MagicMock()
+    repo.exists_by_url.return_value = False
+    repo.find_recent_for_dedup.return_value = []
+    dedup = Deduplicator(repo)
+    article = make_normalized_article(content_hash="")
+    assert dedup.is_duplicate(article) is False
+    # exists_by_content_hash should never be called when content_hash is empty
+    repo.exists_by_content_hash.assert_not_called()
+
+
+def test_fuzzy_title_at_boundary_89_not_duplicate():
+    """A title with similarity score of 89 should NOT be flagged as duplicate (threshold is 90)."""
+    from unittest.mock import patch as mock_patch
+
+    repo = MagicMock()
+    repo.exists_by_url.return_value = False
+    repo.exists_by_content_hash.return_value = False
+    repo.find_recent_for_dedup.return_value = [
+        {"title_normalized": "existing article title", "author_normalized": "john doe"}
+    ]
+    dedup = Deduplicator(repo)
+    article = make_normalized_article(
+        title_normalized="different article title",
+        author_normalized="john doe",
+    )
+    with mock_patch("app.ingestion.dedup.fuzz.ratio", return_value=89):
+        assert dedup.is_duplicate(article) is False
+
+
+def test_fuzzy_title_at_boundary_90_is_duplicate():
+    """A title with similarity score of 90 SHOULD be flagged as duplicate (threshold is 90)."""
+    from unittest.mock import patch as mock_patch
+
+    repo = MagicMock()
+    repo.exists_by_url.return_value = False
+    repo.exists_by_content_hash.return_value = False
+    repo.find_recent_for_dedup.return_value = [
+        {"title_normalized": "existing article title", "author_normalized": "john doe"}
+    ]
+    dedup = Deduplicator(repo)
+    article = make_normalized_article(
+        title_normalized="very similar article title",
+        author_normalized="john doe",
+    )
+    with mock_patch("app.ingestion.dedup.fuzz.ratio", return_value=90):
+        assert dedup.is_duplicate(article) is True

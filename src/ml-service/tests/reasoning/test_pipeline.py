@@ -2,28 +2,10 @@ from unittest.mock import MagicMock
 from uuid import UUID, uuid4
 
 from conftest import make_normalized_article
+from tests.reasoning.conftest import _make_profile, _make_scored
 
 from app.reasoning.cascade_router import RouteResult
 from app.reasoning.models import InterestBlock, ScoredArticle, UserProfile
-
-
-def _make_profile():
-    return UserProfile(
-        user_id=UUID("a1b2c3d4-e5f6-7890-abcd-ef1234567890"),
-        name="Test User",
-        interest_blocks=[
-            InterestBlock(label="Role", text="Policy", embedding=[0.1] * 384),
-        ],
-    )
-
-
-def _make_scored(route="borderline"):
-    return ScoredArticle(
-        article=make_normalized_article(id=uuid4()),
-        vector_score=0.7,
-        rerank_score=0.6,
-        route=route,
-    )
 
 
 def _build_pipeline(**overrides):
@@ -76,9 +58,9 @@ def test_pipeline_end_to_end():
 
 def test_pipeline_combines_router_outputs_for_scorer():
     router = MagicMock()
-    clear = [_make_scored("clear_pass")]
-    border = [_make_scored("borderline"), _make_scored("borderline")]
-    safety = [_make_scored("safety_net")]
+    clear = [_make_scored(route="clear_pass")]
+    border = [_make_scored(route="borderline"), _make_scored(route="borderline")]
+    safety = [_make_scored(route="safety_net")]
     router.route.return_value = RouteResult(
         clear_pass=clear, borderline=border, safety_net=safety
     )
@@ -137,3 +119,18 @@ def test_pipeline_singleton():
     init_scoring_pipeline(mock_pipeline)
 
     assert get_scoring_pipeline() is mock_pipeline
+
+
+def test_get_scoring_pipeline_raises_when_not_initialized():
+    """get_scoring_pipeline() should raise RuntimeError before init."""
+    import pytest
+
+    import app.reasoning.pipeline as pipeline_mod
+
+    saved = pipeline_mod._pipeline_instance
+    pipeline_mod._pipeline_instance = None
+    try:
+        with pytest.raises(RuntimeError, match="not initialized"):
+            pipeline_mod.get_scoring_pipeline()
+    finally:
+        pipeline_mod._pipeline_instance = saved

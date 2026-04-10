@@ -50,18 +50,25 @@ def test_normalizer_discounts_rerank_only():
 
 
 def test_normalizer_discounts_vector_only():
-    from app.reasoning.normalizer import ScoreNormalizer
+    from app.reasoning.normalizer import ScoreNormalizer, VECTOR_DISCOUNT, _to_percentile
 
     normalizer = ScoreNormalizer()
     articles = [
         _make_scored(vector_score=0.9, rerank_score=None, llm_score=None),
-        _make_scored(vector_score=0.5, rerank_score=0.5, llm_score=None),
+        _make_scored(vector_score=0.5, rerank_score=None, llm_score=None),
     ]
 
     results = normalizer.normalize(articles)
 
     # Both have display scores
     assert all(a.display_score is not None for a in results)
+    # Verify the 0.70 discount is actually applied
+    vector_scores = [0.9, 0.5]
+    for a in results:
+        expected = _to_percentile(a.vector_score, vector_scores) * VECTOR_DISCOUNT
+        assert a.display_score == expected, (
+            f"vector_score={a.vector_score}: expected {expected}, got {a.display_score}"
+        )
 
 
 def test_normalizer_imputes_clear_pass_on_missing_llm():

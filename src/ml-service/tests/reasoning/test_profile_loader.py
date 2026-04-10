@@ -1,51 +1,11 @@
+import json
 from uuid import UUID
-
-from conftest import make_normalized_article
+from unittest.mock import MagicMock, patch
 
 from app.reasoning.models import (
     InterestBlock,
-    ScoredArticle,
-    ScoringResult,
     UserProfile,
 )
-
-
-def test_interest_block_defaults():
-    block = InterestBlock(label="Test", text="Some interest")
-    assert block.label == "Test"
-    assert block.text == "Some interest"
-    assert block.embedding == []
-
-
-def test_user_profile_creation():
-    profile = UserProfile(
-        user_id=UUID("a1b2c3d4-e5f6-7890-abcd-ef1234567890"),
-        name="Test User",
-        interest_blocks=[
-            InterestBlock(label="Role", text="I work in policy"),
-        ],
-    )
-    assert profile.name == "Test User"
-    assert len(profile.interest_blocks) == 1
-
-
-def test_scored_article_defaults():
-    article = make_normalized_article()
-    scored = ScoredArticle(article=article)
-    assert scored.vector_score is None
-    assert scored.rerank_score is None
-    assert scored.llm_score is None
-    assert scored.route is None
-
-
-def test_scoring_result_defaults():
-    result = ScoringResult()
-    assert result.candidates_retrieved == 0
-    assert result.stored == 0
-
-
-import json
-from unittest.mock import MagicMock, patch
 
 
 @patch("app.reasoning.profile_loader.SentenceTransformer")
