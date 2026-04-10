@@ -6,7 +6,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from app.middleware import ApiKeyMiddleware
-from app.routers import briefing, health, ingestion, scoring
+from app.routers import briefing, health, ingestion, profiles, scoring
 
 logger = logging.getLogger(__name__)
 
@@ -69,8 +69,17 @@ async def lifespan(app: FastAPI):
     from app.reasoning.retriever import ArticleRetriever
 
     profile_loader = ProfileLoader(model_name=settings.embedding_model)
-    profiles = profile_loader.load_from_file(settings.profiles_path)
-    scoring.set_profiles(profiles)
+    loaded_profiles = profile_loader.load_from_file(settings.profiles_path)
+    scoring.set_profiles(loaded_profiles)
+
+    # Wire up profile sync router
+    profiles.set_profile_loader(profile_loader)
+
+    def _on_profiles_updated(new_profiles):
+        scoring.set_profiles(new_profiles)
+        briefing.set_profiles(new_profiles)
+
+    profiles.set_on_profiles_updated(_on_profiles_updated)
 
     if settings.llm_provider == "openai":
         from app.reasoning.providers.openai import OpenAiProvider
@@ -127,7 +136,7 @@ async def lifespan(app: FastAPI):
 
     briefing_generator = BriefingGenerator(provider=llm_provider)
     briefing.set_generator(briefing_generator)
-    briefing.set_profiles(profiles)
+    briefing.set_profiles(loaded_profiles)
 
     # Start background scheduler
     start_scheduler(settings.ingestion_interval_minutes)
@@ -146,3 +155,4 @@ app.include_router(health.router)
 app.include_router(ingestion.router)
 app.include_router(scoring.router)
 app.include_router(briefing.router)
+app.include_router(profiles.router)

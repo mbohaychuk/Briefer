@@ -13,6 +13,22 @@ public class TestFactory : WebApplicationFactory<Program>
     // across scoped DbContext instances (one per HTTP request)
     private readonly SqliteConnection _connection = new("DataSource=:memory:");
 
+    /// <summary>
+    /// Shared mock handler that all tests in this fixture can configure.
+    /// Registered as the primary handler for the "MlService" named HttpClient.
+    /// </summary>
+    public MockHttpHandler MlHandler { get; } = CreateDefaultHandler();
+
+    private static MockHttpHandler CreateDefaultHandler()
+    {
+        var handler = new MockHttpHandler();
+        // Profile sync is triggered by ProfileController mutations;
+        // register a default OK so tests don't hit retry delays.
+        handler.RegisterOk("POST", "/api/profiles/sync",
+            """{"status":"ok","profiles_synced":1}""");
+        return handler;
+    }
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         _connection.Open();
@@ -32,6 +48,10 @@ public class TestFactory : WebApplicationFactory<Program>
             services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlite(_connection)
                        .UseSnakeCaseNamingConvention());
+
+            // Replace the "MlService" HttpClient with one backed by MockHttpHandler
+            services.AddHttpClient("MlService")
+                .ConfigurePrimaryHttpMessageHandler(() => MlHandler);
         });
 
         builder.UseEnvironment("Testing");
