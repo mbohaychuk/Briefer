@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using NewsSearcher.Api.Data;
 using NewsSearcher.Api.Models.DTOs.Profile;
 using NewsSearcher.Api.Models.Entities;
+using NewsSearcher.Api.Services;
 
 namespace NewsSearcher.Api.Controllers;
 
@@ -14,10 +15,14 @@ namespace NewsSearcher.Api.Controllers;
 public class ProfileController : ControllerBase
 {
     private readonly AppDbContext _db;
+    private readonly MlServiceClient _ml;
+    private readonly ILogger<ProfileController> _logger;
 
-    public ProfileController(AppDbContext db)
+    public ProfileController(AppDbContext db, MlServiceClient ml, ILogger<ProfileController> logger)
     {
         _db = db;
+        _ml = ml;
+        _logger = logger;
     }
 
     private string UserId => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
@@ -63,6 +68,7 @@ public class ProfileController : ControllerBase
         };
         newProfile.Interests.Add(interest);
         await _db.SaveChangesAsync();
+        await SyncProfileToMlServiceAsync();
 
         return Ok(new InterestDescriptionDto
         {
@@ -89,6 +95,7 @@ public class ProfileController : ControllerBase
             interest.SortOrder = request.SortOrder.Value;
 
         await _db.SaveChangesAsync();
+        await SyncProfileToMlServiceAsync();
 
         return Ok(new InterestDescriptionDto
         {
@@ -112,6 +119,7 @@ public class ProfileController : ControllerBase
         newProfile.Interests.Remove(interest);
         _db.InterestDescriptions.Remove(interest);
         await _db.SaveChangesAsync();
+        await SyncProfileToMlServiceAsync();
 
         return NoContent();
     }
@@ -159,5 +167,47 @@ public class ProfileController : ControllerBase
         _db.UserProfiles.Add(newProfile);
 
         return (newProfile, idMapping);
+    }
+
+    /// <summary>
+    /// Push the current user's profile to the ML service so it can
+    /// re-embed interest blocks for scoring and briefing.
+    /// Failures are logged but do not block the HTTP response.
+    /// </summary>
+    private async Task SyncProfileToMlServiceAsync()
+    {
+        try
+        {
+            var user = await _db.Users.FindAsync(UserId);
+            var profile = await _db.UserProfiles
+                .Include(p => p.Interests.OrderBy(i => i.SortOrder))
+                .FirstOrDefaultAsync(p => p.UserId == UserId && p.IsCurrent);
+
+            if (profile == null || user == null)
+                return;
+
+            var payload = new
+            {
+                profiles = new[]
+                {
+                    new
+                    {
+                        user_id = UserId,
+                        name = user.Email ?? "Unknown",
+                        interests = profile.Interests.Select(i => new
+                        {
+                            label = i.Title,
+                            text = i.Description,
+                        }).ToArray(),
+                    }
+                }
+            };
+
+            await _ml.SyncProfilesAsync(payload);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to sync profile to ML service for user {UserId}", UserId);
+        }
     }
 }
