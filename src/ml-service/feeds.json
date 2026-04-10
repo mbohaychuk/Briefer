@@ -9,6 +9,74 @@
       "name": "CBC Canada"
     },
     {
+      "url": "https://rss.cbc.ca/lineup/politics.xml",
+      "name": "CBC Politics"
+    },
+    {
+      "url": "https://rss.cbc.ca/lineup/canada-edmonton.xml",
+      "name": "CBC Edmonton"
+    },
+    {
+      "url": "https://rss.cbc.ca/lineup/canada-calgary.xml",
+      "name": "CBC Calgary"
+    },
+    {
+      "url": "https://www.theglobeandmail.com/arc/outboundfeeds/rss/category/canada/",
+      "name": "Globe and Mail - Canada"
+    },
+    {
+      "url": "https://www.theglobeandmail.com/arc/outboundfeeds/rss/category/politics/",
+      "name": "Globe and Mail - Politics"
+    },
+    {
+      "url": "https://nationalpost.com/feed",
+      "name": "National Post"
+    },
+    {
+      "url": "https://globalnews.ca/feed/",
+      "name": "Global News"
+    },
+    {
+      "url": "https://globalnews.ca/canada/feed/",
+      "name": "Global News - Canada"
+    },
+    {
+      "url": "https://globalnews.ca/edmonton/feed/",
+      "name": "Global News - Edmonton"
+    },
+    {
+      "url": "https://globalnews.ca/calgary/feed/",
+      "name": "Global News - Calgary"
+    },
+    {
+      "url": "https://edmontonjournal.com/feed",
+      "name": "Edmonton Journal"
+    },
+    {
+      "url": "https://calgaryherald.com/feed",
+      "name": "Calgary Herald"
+    },
+    {
+      "url": "https://thenarwhal.ca/feed/",
+      "name": "The Narwhal"
+    },
+    {
+      "url": "https://thenarwhal.ca/tag/alberta/feed/",
+      "name": "The Narwhal - Alberta"
+    },
+    {
+      "url": "https://thenarwhal.ca/tag/oilsands/feed/",
+      "name": "The Narwhal - Oil Sands"
+    },
+    {
+      "url": "https://thenarwhal.ca/tag/wildlife/feed/",
+      "name": "The Narwhal - Wildlife"
+    },
+    {
+      "url": "https://news.mongabay.com/feed",
+      "name": "Mongabay"
+    },
+    {
       "url": "https://feeds.bbci.co.uk/news/rss.xml",
       "name": "BBC News"
     },

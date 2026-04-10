@@ -1,10 +1,13 @@
 import logging
 
+import httpx
 import trafilatura
 
 logger = logging.getLogger(__name__)
 
 MIN_CONTENT_LENGTH = 100
+USER_AGENT = "Mozilla/5.0 (compatible; NewsBriefer/1.0)"
+DOWNLOAD_TIMEOUT = 20
 
 
 class FullTextExtractor:
@@ -12,7 +15,16 @@ class FullTextExtractor:
 
     def extract(self, url: str) -> str | None:
         try:
-            downloaded = trafilatura.fetch_url(url)
+            # Use httpx with a proper user-agent to avoid blocks (e.g. CBC),
+            # then hand the HTML to trafilatura for content extraction.
+            response = httpx.get(
+                url,
+                headers={"User-Agent": USER_AGENT},
+                timeout=DOWNLOAD_TIMEOUT,
+                follow_redirects=True,
+            )
+            response.raise_for_status()
+            downloaded = response.text
             if not downloaded:
                 logger.warning("Failed to download: %s", url)
                 return None

@@ -1,6 +1,6 @@
 import time
 from types import SimpleNamespace
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from app.ingestion.plugins.rss_plugin import RssPlugin
 
@@ -25,8 +25,17 @@ def _make_feed(entries):
     return SimpleNamespace(entries=entries, bozo=False)
 
 
+def _mock_httpx_get(mock_httpx):
+    mock_response = MagicMock()
+    mock_response.text = "<rss>mock</rss>"
+    mock_response.raise_for_status = MagicMock()
+    mock_httpx.get.return_value = mock_response
+
+
 @patch("app.ingestion.plugins.rss_plugin.feedparser.parse")
-def test_fetch_returns_articles(mock_parse):
+@patch("app.ingestion.plugins.rss_plugin.httpx")
+def test_fetch_returns_articles(mock_httpx, mock_parse):
+    _mock_httpx_get(mock_httpx)
     mock_parse.return_value = _make_feed([_make_entry()])
     plugin = RssPlugin([{"url": "http://test.rss", "name": "Test Feed"}])
     articles = plugin.fetch()
@@ -39,7 +48,9 @@ def test_fetch_returns_articles(mock_parse):
 
 
 @patch("app.ingestion.plugins.rss_plugin.feedparser.parse")
-def test_fetch_multiple_feeds(mock_parse):
+@patch("app.ingestion.plugins.rss_plugin.httpx")
+def test_fetch_multiple_feeds(mock_httpx, mock_parse):
+    _mock_httpx_get(mock_httpx)
     mock_parse.return_value = _make_feed([_make_entry()])
     feeds = [
         {"url": "http://feed1.rss", "name": "Feed 1"},
@@ -52,7 +63,9 @@ def test_fetch_multiple_feeds(mock_parse):
 
 
 @patch("app.ingestion.plugins.rss_plugin.feedparser.parse")
-def test_fetch_skips_entries_without_link(mock_parse):
+@patch("app.ingestion.plugins.rss_plugin.httpx")
+def test_fetch_skips_entries_without_link(mock_httpx, mock_parse):
+    _mock_httpx_get(mock_httpx)
     mock_parse.return_value = _make_feed([_make_entry(link="")])
     plugin = RssPlugin([{"url": "http://test.rss", "name": "Test Feed"}])
     articles = plugin.fetch()
@@ -60,7 +73,9 @@ def test_fetch_skips_entries_without_link(mock_parse):
 
 
 @patch("app.ingestion.plugins.rss_plugin.feedparser.parse")
-def test_fetch_skips_entries_without_title(mock_parse):
+@patch("app.ingestion.plugins.rss_plugin.httpx")
+def test_fetch_skips_entries_without_title(mock_httpx, mock_parse):
+    _mock_httpx_get(mock_httpx)
     mock_parse.return_value = _make_feed([_make_entry(title="")])
     plugin = RssPlugin([{"url": "http://test.rss", "name": "Test Feed"}])
     articles = plugin.fetch()
@@ -68,7 +83,9 @@ def test_fetch_skips_entries_without_title(mock_parse):
 
 
 @patch("app.ingestion.plugins.rss_plugin.feedparser.parse")
-def test_fetch_handles_missing_published_date(mock_parse):
+@patch("app.ingestion.plugins.rss_plugin.httpx")
+def test_fetch_handles_missing_published_date(mock_httpx, mock_parse):
+    _mock_httpx_get(mock_httpx)
     entry = _make_entry()
     entry.published_parsed = None
     mock_parse.return_value = _make_feed([entry])
@@ -78,9 +95,9 @@ def test_fetch_handles_missing_published_date(mock_parse):
     assert articles[0].published_at is None
 
 
-@patch("app.ingestion.plugins.rss_plugin.feedparser.parse")
-def test_fetch_survives_feed_error(mock_parse):
-    mock_parse.side_effect = Exception("Network error")
+@patch("app.ingestion.plugins.rss_plugin.httpx")
+def test_fetch_survives_feed_error(mock_httpx):
+    mock_httpx.get.side_effect = Exception("Network error")
     plugin = RssPlugin([{"url": "http://bad.rss", "name": "Bad Feed"}])
     articles = plugin.fetch()
     assert len(articles) == 0
