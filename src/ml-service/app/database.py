@@ -76,5 +76,39 @@ def init_schema():
             "CREATE INDEX IF NOT EXISTS idx_user_articles_display_score "
             "ON user_articles(user_id, display_score DESC)"
         )
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS briefings (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                user_id UUID NOT NULL,
+                executive_summary TEXT,
+                article_count INTEGER NOT NULL DEFAULT 0,
+                profile_version INTEGER NOT NULL DEFAULT 1,
+                status TEXT NOT NULL DEFAULT 'pending',
+                generated_at TIMESTAMPTZ,
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            )
+            """
+        )
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_briefings_user_created "
+            "ON briefings(user_id, created_at DESC)"
+        )
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS briefing_articles (
+                briefing_id UUID NOT NULL,
+                article_id UUID NOT NULL,
+                rank INTEGER NOT NULL,
+                display_score REAL,
+                summary TEXT,
+                priority TEXT,
+                explanation TEXT,
+                PRIMARY KEY (briefing_id, article_id),
+                FOREIGN KEY (briefing_id) REFERENCES briefings(id),
+                FOREIGN KEY (article_id) REFERENCES articles(id)
+            )
+            """
+        )
         conn.commit()
     logger.info("Database schema initialized")

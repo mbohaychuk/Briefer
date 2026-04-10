@@ -6,7 +6,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from app.middleware import ApiKeyMiddleware
-from app.routers import health, ingestion, scoring
+from app.routers import briefing, health, ingestion, scoring
 
 logger = logging.getLogger(__name__)
 
@@ -122,6 +122,13 @@ async def lifespan(app: FastAPI):
     )
     init_scoring_pipeline(scoring_pipeline)
 
+    # Initialize briefing generator
+    from app.briefing.generator import BriefingGenerator
+
+    briefing_generator = BriefingGenerator(provider=llm_provider)
+    briefing.set_generator(briefing_generator)
+    briefing.set_profiles(profiles)
+
     # Start background scheduler
     start_scheduler(settings.ingestion_interval_minutes)
 
@@ -138,3 +145,4 @@ app.add_middleware(ApiKeyMiddleware)
 app.include_router(health.router)
 app.include_router(ingestion.router)
 app.include_router(scoring.router)
+app.include_router(briefing.router)

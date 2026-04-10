@@ -25,7 +25,7 @@ def test_default_values():
     assert s.ollama_model == "gemma4"
     assert s.ollama_timeout == 120
     assert s.openai_api_key == ""
-    assert s.openai_model == "gpt-4.1-mini"
+    assert s.openai_model == "gpt-4.1-nano"
     assert s.openai_timeout == 120
     assert s.retriever_top_k == 50
     assert s.retriever_date_days == 7
