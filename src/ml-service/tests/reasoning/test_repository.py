@@ -1,15 +1,15 @@
 from datetime import datetime, timezone
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, ANY
 from uuid import UUID, uuid4
 
 from conftest import make_normalized_article
+from tests.reasoning.conftest import _make_scored
 
 from app.reasoning.models import ScoredArticle
 
 
 def _make_scored_for_storage():
-    return ScoredArticle(
-        article=make_normalized_article(id=uuid4()),
+    return _make_scored(
         vector_score=0.7,
         rerank_score=0.8,
         llm_score=8.0,
@@ -37,7 +37,21 @@ def test_repository_inserts_scored_article():
     sql = call_args[0][0]
     assert "INSERT INTO user_articles" in sql
     params = call_args[0][1]
-    assert str(user_id) in [str(p) for p in params]
+    # Verify parameter ordering matches SQL columns:
+    # (user_id, article_id, status, vector_score, rerank_score,
+    #  llm_score, display_score, summary, explanation, priority, route, scored_at)
+    assert params[0] == str(user_id)
+    assert params[1] == str(scored.article.id)
+    assert params[2] == "ready"
+    assert params[3] == scored.vector_score
+    assert params[4] == scored.rerank_score
+    assert params[5] == scored.llm_score
+    assert params[6] == scored.display_score
+    assert params[7] == scored.summary
+    assert params[8] == scored.llm_explanation
+    assert params[9] == scored.priority
+    assert params[10] == scored.route
+    assert isinstance(params[11], datetime)  # scored_at
 
 
 def test_repository_insert_batch():
@@ -87,6 +101,19 @@ def test_repository_checks_already_scored():
     article_id = uuid4()
 
     assert repo.is_already_scored(user_id, article_id) is True
+
+
+def test_repository_is_already_scored_returns_false():
+    from app.reasoning.repository import ScoringRepository
+
+    mock_conn = MagicMock()
+    mock_conn.execute.return_value.fetchone.return_value = {"count": 0}
+
+    repo = ScoringRepository(conn=mock_conn)
+    user_id = UUID("a1b2c3d4-e5f6-7890-abcd-ef1234567890")
+    article_id = uuid4()
+
+    assert repo.is_already_scored(user_id, article_id) is False
 
 
 def test_repository_commit():

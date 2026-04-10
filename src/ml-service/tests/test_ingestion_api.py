@@ -79,3 +79,37 @@ def test_ingestion_endpoints_require_api_key():
     client = TestClient(app)
     response = client.post("/api/ingestion/trigger")
     assert response.status_code == 401
+
+
+@patch("app.routers.ingestion._lock")
+@patch("app.routers.ingestion.get_pipeline")
+def test_trigger_returns_already_running(mock_get_pipeline, mock_lock):
+    """When the lock is already held, should return already_running status."""
+    mock_lock.acquire.return_value = False
+
+    from app.main import app
+
+    client = TestClient(app)
+    response = client.post(
+        "/api/ingestion/trigger", headers={"X-Api-Key": "test-api-key"}
+    )
+    assert response.status_code == 200
+    assert response.json()["status"] == "already_running"
+    mock_get_pipeline.assert_not_called()
+
+
+@patch("app.routers.ingestion.load_feeds")
+def test_list_feeds_handles_missing_file(mock_load):
+    """When feeds.json is missing, should return empty feeds list with error."""
+    mock_load.side_effect = FileNotFoundError("feeds.json not found")
+
+    from app.main import app
+
+    client = TestClient(app)
+    response = client.get(
+        "/api/ingestion/feeds", headers={"X-Api-Key": "test-api-key"}
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["feeds"] == []
+    assert "error" in data

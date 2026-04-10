@@ -7,9 +7,10 @@ from app.ingestion.models import NormalizedArticle, RawArticle
 
 
 def normalize_text(text: str) -> str:
-    """Lowercase, strip accents and punctuation, collapse whitespace."""
+    """Lowercase, strip accents, collapse whitespace. Preserves non-Latin scripts."""
     text = unicodedata.normalize("NFKD", text)
-    text = text.encode("ascii", "ignore").decode("ascii")
+    # Strip combining marks (accents) but keep base characters including non-Latin
+    text = "".join(c for c in text if not unicodedata.combining(c))
     text = text.lower()
     text = re.sub(r"[^\w\s]", "", text)
     text = re.sub(r"\s+", " ", text).strip()

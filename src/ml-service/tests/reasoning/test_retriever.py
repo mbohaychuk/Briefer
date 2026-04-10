@@ -2,24 +2,9 @@ from unittest.mock import MagicMock
 from uuid import UUID, uuid4
 
 from conftest import make_normalized_article
+from tests.reasoning.conftest import _make_profile
 
 from app.reasoning.models import InterestBlock, ScoredArticle, UserProfile
-
-
-def _make_profile(num_interests=2):
-    blocks = [
-        InterestBlock(
-            label=f"Interest {i}",
-            text=f"I care about topic {i}",
-            embedding=[float(i * 0.1)] * 384,
-        )
-        for i in range(num_interests)
-    ]
-    return UserProfile(
-        user_id=UUID("a1b2c3d4-e5f6-7890-abcd-ef1234567890"),
-        name="Test User",
-        interest_blocks=blocks,
-    )
 
 
 def _make_qdrant_hit(article_id, score):

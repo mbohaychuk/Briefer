@@ -2,6 +2,8 @@ import time
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
+from tests.ingestion.conftest import _mock_httpx_get
+
 from app.ingestion.plugins.rss_plugin import RssPlugin
 
 
@@ -23,13 +25,6 @@ def _make_entry(
 
 def _make_feed(entries):
     return SimpleNamespace(entries=entries, bozo=False)
-
-
-def _mock_httpx_get(mock_httpx):
-    mock_response = MagicMock()
-    mock_response.text = "<rss>mock</rss>"
-    mock_response.raise_for_status = MagicMock()
-    mock_httpx.get.return_value = mock_response
 
 
 @patch("app.ingestion.plugins.rss_plugin.feedparser.parse")
@@ -101,3 +96,18 @@ def test_fetch_survives_feed_error(mock_httpx):
     plugin = RssPlugin([{"url": "http://bad.rss", "name": "Bad Feed"}])
     articles = plugin.fetch()
     assert len(articles) == 0
+
+
+@patch("app.ingestion.plugins.rss_plugin.feedparser.parse")
+@patch("app.ingestion.plugins.rss_plugin.httpx")
+def test_parse_date_handles_invalid_data(mock_httpx, mock_parse):
+    """_parse_date should return None when published_parsed contains invalid data."""
+    _mock_httpx_get(mock_httpx)
+    # Use strings instead of ints to trigger TypeError in datetime()
+    entry = _make_entry()
+    entry.published_parsed = ("not", "a", "valid", "date", "tuple", "here", 0, 0, 0)
+    mock_parse.return_value = _make_feed([entry])
+    plugin = RssPlugin([{"url": "http://test.rss", "name": "Test Feed"}])
+    articles = plugin.fetch()
+    assert len(articles) == 1
+    assert articles[0].published_at is None

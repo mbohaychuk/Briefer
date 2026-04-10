@@ -1,13 +1,8 @@
 from unittest.mock import MagicMock, patch
 
+from tests.ingestion.conftest import _mock_httpx_get
+
 from app.ingestion.extractor import FullTextExtractor
-
-
-def _mock_httpx_get(mock_httpx, text="<html><body>Content</body></html>"):
-    mock_response = MagicMock()
-    mock_response.text = text
-    mock_response.raise_for_status = MagicMock()
-    mock_httpx.get.return_value = mock_response
 
 
 @patch("app.ingestion.extractor.trafilatura")

@@ -64,7 +64,6 @@ async def lifespan(app: FastAPI):
     from app.reasoning.normalizer import ScoreNormalizer
     from app.reasoning.pipeline import init_scoring_pipeline, ScoringPipeline
     from app.reasoning.profile_loader import ProfileLoader
-    from app.reasoning.providers.ollama import OllamaProvider
     from app.reasoning.reranker import ArticleReranker
     from app.reasoning.repository import ScoringRepository
     from app.reasoning.retriever import ArticleRetriever
@@ -73,11 +72,24 @@ async def lifespan(app: FastAPI):
     profiles = profile_loader.load_from_file(settings.profiles_path)
     scoring.set_profiles(profiles)
 
-    llm_provider = OllamaProvider(
-        base_url=settings.ollama_base_url,
-        model=settings.ollama_model,
-        timeout=settings.ollama_timeout,
-    )
+    if settings.llm_provider == "openai":
+        from app.reasoning.providers.openai import OpenAiProvider
+
+        llm_provider = OpenAiProvider(
+            api_key=settings.openai_api_key,
+            model=settings.openai_model,
+            timeout=settings.openai_timeout,
+        )
+        logger.info("Using OpenAI provider (model=%s)", settings.openai_model)
+    else:
+        from app.reasoning.providers.ollama import OllamaProvider
+
+        llm_provider = OllamaProvider(
+            base_url=settings.ollama_base_url,
+            model=settings.ollama_model,
+            timeout=settings.ollama_timeout,
+        )
+        logger.info("Using Ollama provider (model=%s)", settings.ollama_model)
 
     scoring_repo = ScoringRepository(conn=conn)
     retriever = ArticleRetriever(

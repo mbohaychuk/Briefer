@@ -6,6 +6,7 @@ import trafilatura
 logger = logging.getLogger(__name__)
 
 MIN_CONTENT_LENGTH = 100
+MAX_CONTENT_LENGTH = 100_000  # ~100KB cap to prevent OOM on malicious pages
 USER_AGENT = "Mozilla/5.0 (compatible; NewsBriefer/1.0)"
 DOWNLOAD_TIMEOUT = 20
 
@@ -33,6 +34,9 @@ class FullTextExtractor:
             if not text or len(text.strip()) < MIN_CONTENT_LENGTH:
                 logger.warning("Extraction too short or empty: %s", url)
                 return None
+
+            if len(text) > MAX_CONTENT_LENGTH:
+                text = text[:MAX_CONTENT_LENGTH]
 
             return text
         except Exception:

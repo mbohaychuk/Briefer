@@ -75,3 +75,20 @@ def test_scoring_endpoints_require_api_key():
     client = TestClient(app)
     response = client.post("/api/scoring/trigger")
     assert response.status_code == 401
+
+
+@patch("app.routers.scoring._lock")
+@patch("app.routers.scoring.get_scoring_pipeline")
+def test_trigger_returns_already_running(mock_get_pipeline, mock_lock):
+    """When the lock is already held, should return already_running status."""
+    mock_lock.acquire.return_value = False
+
+    from app.main import app
+
+    client = TestClient(app)
+    response = client.post(
+        "/api/scoring/trigger", headers={"X-Api-Key": "test-api-key"}
+    )
+    assert response.status_code == 200
+    assert response.json()["status"] == "already_running"
+    mock_get_pipeline.assert_not_called()

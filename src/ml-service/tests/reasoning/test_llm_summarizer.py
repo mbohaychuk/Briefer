@@ -2,30 +2,9 @@ from unittest.mock import MagicMock
 from uuid import UUID, uuid4
 
 from conftest import make_normalized_article
+from tests.reasoning.conftest import _make_profile, _make_scored
 
 from app.reasoning.models import InterestBlock, ScoredArticle, UserProfile
-
-
-def _make_profile():
-    return UserProfile(
-        user_id=UUID("a1b2c3d4-e5f6-7890-abcd-ef1234567890"),
-        name="Test User",
-        interest_blocks=[
-            InterestBlock(label="Role", text="Environmental policy", embedding=[]),
-        ],
-    )
-
-
-def _make_scored():
-    return ScoredArticle(
-        article=make_normalized_article(id=uuid4()),
-        vector_score=0.7,
-        rerank_score=0.8,
-        llm_score=8,
-        llm_explanation="Relevant",
-        priority="important",
-        route="borderline",
-    )
 
 
 def test_summarizer_generates_summary():
@@ -54,7 +33,9 @@ def test_summarizer_includes_profile_context():
     mock_provider.generate.return_value = "Summary text"
 
     summarizer = LlmSummarizer(provider=mock_provider)
-    profile = _make_profile()
+    profile = _make_profile(interest_blocks=[
+        InterestBlock(label="Role", text="Environmental policy", embedding=[]),
+    ])
     articles = [_make_scored()]
 
     summarizer.summarize(articles, profile)

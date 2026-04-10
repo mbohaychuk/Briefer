@@ -2,27 +2,10 @@ from unittest.mock import MagicMock, patch
 from uuid import UUID
 
 from conftest import make_normalized_article
+from tests.reasoning.conftest import _make_profile, _make_scored
 
 from app.reasoning.models import InterestBlock, ScoredArticle, UserProfile
 import numpy as np
-
-
-def _make_profile():
-    return UserProfile(
-        user_id=UUID("a1b2c3d4-e5f6-7890-abcd-ef1234567890"),
-        name="Test User",
-        interest_blocks=[
-            InterestBlock(label="Role", text="Environmental policy analyst", embedding=[0.1] * 384),
-            InterestBlock(label="Wildlife", text="Deer population management", embedding=[0.2] * 384),
-        ],
-    )
-
-
-def _make_scored(vector_score=0.8):
-    return ScoredArticle(
-        article=make_normalized_article(),
-        vector_score=vector_score,
-    )
 
 
 @patch("app.reasoning.reranker.CrossEncoder")
@@ -73,7 +56,10 @@ def test_reranker_builds_correct_pairs(mock_ce_cls):
     from app.reasoning.reranker import ArticleReranker
 
     reranker = ArticleReranker(model_name="test-model")
-    profile = _make_profile()
+    profile = _make_profile(interest_blocks=[
+        InterestBlock(label="Role", text="Environmental policy analyst", embedding=[0.1] * 384),
+        InterestBlock(label="Wildlife", text="Deer population management", embedding=[0.2] * 384),
+    ])
     article = make_normalized_article(title="Deer Disease Found", raw_content="Full text about deer " * 30)
     articles = [ScoredArticle(article=article, vector_score=0.8)]
 

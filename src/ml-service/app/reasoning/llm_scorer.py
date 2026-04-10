@@ -93,6 +93,19 @@ class LlmScorer:
             logger.warning("LLM returned incomplete JSON: %s", result)
             return None
 
+        # Validate and coerce score to int
+        try:
+            result["score"] = int(result["score"])
+        except (TypeError, ValueError):
+            logger.warning("LLM returned non-numeric score: %s", result["score"])
+            return None
+
+        result["score"] = max(1, min(10, result["score"]))
+
+        valid_priorities = {"routine", "important", "critical"}
+        if result.get("priority") not in valid_priorities:
+            result["priority"] = "routine"
+
         return result
 
     def _format_profile(self, profile: UserProfile) -> str:
