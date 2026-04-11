@@ -38,7 +38,7 @@
         <a
           :href="article.url"
           target="_blank"
-          rel="noopener"
+          rel="noopener noreferrer"
           class="text-xs text-primary hover:underline ml-auto shrink-0"
         >
           Read original &rarr;
