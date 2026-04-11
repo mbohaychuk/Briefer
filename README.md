@@ -186,6 +186,7 @@ The `chat()` method isn't used by the current pipeline. It exists for a planned 
 | LLM (cloud) | OpenAI GPT-4.1-nano | Low latency, good structured output |
 | Deduplication | rapidfuzz | Fast fuzzy matching for title/author comparison |
 | Extraction | trafilatura | Robust full-text extraction from article URLs |
+| Frontend | Nuxt 3 (Vue 3) + Tailwind CSS | SPA dashboard, file-based routing, Pinia state |
 
 ## Project Structure
 
@@ -203,16 +204,26 @@ Briefer/
     |   |-- NewsSearcher.Api/        # Controllers, Services, Models, Data
     |   |-- NewsSearcher.Api.Tests/  # 29 tests (xUnit)
     |   `-- Dockerfile
-    `-- ml-service/
-        |-- app/
-        |   |-- ingestion/           # RSS plugins, extraction, dedup, embedding
-        |   |-- reasoning/           # 4-tier cascade, LLM providers, scoring
-        |   |-- briefing/            # Generation, repository, models
-        |   `-- routers/             # FastAPI endpoints
-        |-- tests/                   # 223 tests (pytest)
-        |-- feeds.json               # 21 RSS feed sources
-        |-- profiles.json            # Test user profile
-        `-- Dockerfile
+    |-- ml-service/
+    |   |-- app/
+    |   |   |-- ingestion/           # RSS plugins, extraction, dedup, embedding
+    |   |   |-- reasoning/           # 4-tier cascade, LLM providers, scoring
+    |   |   |-- briefing/            # Generation, repository, models
+    |   |   `-- routers/             # FastAPI endpoints
+    |   |-- tests/                   # 223 tests (pytest)
+    |   |-- feeds.json               # 21 RSS feed sources
+    |   |-- profiles.json            # Test user profile
+    |   `-- Dockerfile
+    `-- frontend/
+        |-- pages/                   # login, index (dashboard), profile, history
+        |-- components/              # ArticleCard, StatsBar, ExecutiveSummary, etc.
+        |-- composables/             # useApi, useAuth, useBriefing, useProfile, usePipeline
+        |-- stores/                  # Pinia auth store (JWT decode, localStorage)
+        |-- plugins/                 # Auth hydration (client-side)
+        |-- middleware/              # Global auth guard
+        |-- types/                   # TypeScript interfaces
+        |-- nuxt.config.ts
+        `-- tailwind.config.ts       # Design tokens (colors, spacing)
 ```
 
 ## Running Locally
@@ -236,6 +247,11 @@ TESTING=0 uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 # Start the web API (separate terminal)
 cd src/web-api/NewsSearcher.Api
 dotnet run
+
+# Start the frontend (separate terminal)
+cd src/frontend
+npm install
+npm run dev
 
 # Or run everything via Docker Compose
 docker compose up --build
@@ -303,9 +319,9 @@ TESTING=1 python -m pytest tests/ -v
 
 ## What's Next
 
-The backend is complete. Planned next steps, roughly in order:
+Planned next steps, roughly in order:
 
-- **Vue/Nuxt frontend** -- briefing dashboard, profile management, feedback controls
+
 - **Guided profile builder** -- AI-assisted interest expansion through causal reasoning (seed, expand, confirm workflow)
 - **HyDE embeddings** -- generate hypothetical ideal articles from user profiles for better retrieval
 - **Feedback loop** -- relevant/not-relevant signals to tune cascade thresholds over time
