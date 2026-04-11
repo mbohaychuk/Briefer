@@ -1,0 +1,21 @@
+{
+  "name": "briefer-frontend",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
+  },
+  "dependencies": {
+    "nuxt": "^3.17.0"
+  },
+  "devDependencies": {
+    "@nuxtjs/tailwindcss": "^6.13.0",
+    "@pinia/nuxt": "^0.5.0",
+    "tailwindcss": "^3.4.0",
+    "typescript": "^5.7.0"
+  }
+}
