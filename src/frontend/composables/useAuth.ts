@@ -26,6 +26,9 @@ export function useAuth() {
   }
 
   function logout() {
+    useBriefing().reset()
+    useProfile().reset()
+    usePipeline().reset()
     authStore.logout()
     navigateTo('/login')
   }

@@ -41,6 +41,10 @@
             <div class="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
           </div>
 
+          <p v-else-if="detailError" class="text-sm text-text-muted py-4">
+            Could not load briefing details.
+          </p>
+
           <template v-else-if="expandedBriefing">
             <!-- Executive summary -->
             <div v-if="expandedBriefing.executive_summary" class="mb-4">
@@ -85,6 +89,7 @@ const loading = ref(true)
 const expandedId = ref<string | null>(null)
 const expandedBriefing = ref<Briefing | null>(null)
 const loadingDetail = ref(false)
+const detailError = ref(false)
 const briefingCache = new Map<string, Briefing>()
 
 async function fetchHistory() {
@@ -110,11 +115,14 @@ async function toggle(id: string) {
   }
 
   loadingDetail.value = true
+  detailError.value = false
   const { data } = await request<Briefing>(`/briefing/${id}`)
   loadingDetail.value = false
   if (data) {
     briefingCache.set(id, data)
     expandedBriefing.value = data
+  } else {
+    detailError.value = true
   }
 }
 

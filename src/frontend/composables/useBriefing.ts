@@ -39,5 +39,12 @@ export function useBriefing() {
     briefing.value = data
   }
 
-  return { briefing, isLoading, isGenerating, error, fetchLatest, generate }
+  function reset() {
+    briefing.value = null
+    isLoading.value = false
+    isGenerating.value = false
+    error.value = null
+  }
+
+  return { briefing, isLoading, isGenerating, error, fetchLatest, generate, reset }
 }

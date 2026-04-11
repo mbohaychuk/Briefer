@@ -59,6 +59,13 @@ export function usePipeline() {
     await fetchScoringStatus()
   }
 
+  function reset() {
+    isIngesting.value = false
+    isScoring.value = false
+    ingestionStatus.value = null
+    scoringStatus.value = null
+  }
+
   return {
     isIngesting,
     isScoring,
@@ -68,5 +75,6 @@ export function usePipeline() {
     fetchScoringStatus,
     triggerIngestion,
     triggerScoring,
+    reset,
   }
 }

@@ -73,5 +73,11 @@ export function useProfile() {
     show('Interest removed', 'success')
   }
 
-  return { profile, isLoading, error, fetchProfile, addInterest, updateInterest, deleteInterest }
+  function reset() {
+    profile.value = null
+    isLoading.value = false
+    error.value = null
+  }
+
+  return { profile, isLoading, error, fetchProfile, addInterest, updateInterest, deleteInterest, reset }
 }
