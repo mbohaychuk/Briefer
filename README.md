@@ -198,7 +198,7 @@ Briefer/
 |-- docs/
 |   `-- design-docs/
 |       |-- specs/                   # Design specifications
-|       `-- plans/                   # Implementation plans (4 phases)
+|       `-- plans/                   # Implementation plans
 `-- src/
     |-- web-api/
     |   |-- NewsSearcher.Api/        # Controllers, Services, Models, Data
