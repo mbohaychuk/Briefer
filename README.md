@@ -196,9 +196,8 @@ Briefer/
 |-- docker-compose.dev.yml          # Dev overrides (exposed ports, hot reload)
 |-- .env.example
 |-- docs/
-|   `-- design-docs/
-|       |-- specs/                   # Design specifications
-|       `-- plans/                   # Implementation plans
+|   |-- specs/                       # Design specifications
+|   `-- plans/                       # Implementation plans
 `-- src/
     |-- web-api/
     |   |-- NewsSearcher.Api/        # Controllers, Services, Models, Data
