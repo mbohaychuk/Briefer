@@ -31,6 +31,7 @@ build/
 .vscode/
 .idea/
 .claude/
+CLAUDE.md
 *.swp
 
 # OS
@@ -39,3 +40,6 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Local dev overrides
+docker-compose.local.yml
