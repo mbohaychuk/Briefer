@@ -30,8 +30,6 @@ build/
 .vs/
 .vscode/
 .idea/
-.claude/
-CLAUDE.md
 *.swp
 
 # OS
