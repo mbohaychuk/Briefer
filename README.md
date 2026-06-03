@@ -200,8 +200,8 @@ Briefer/
 |   `-- plans/                       # Implementation plans
 `-- src/
     |-- web-api/
-    |   |-- NewsSearcher.Api/        # Controllers, Services, Models, Data
-    |   |-- NewsSearcher.Api.Tests/  # 29 tests (xUnit)
+    |   |-- Briefer.Api/        # Controllers, Services, Models, Data
+    |   |-- Briefer.Api.Tests/  # 29 tests (xUnit)
     |   `-- Dockerfile
     |-- ml-service/
     |   |-- app/
@@ -244,7 +244,7 @@ pip install -r requirements.txt
 TESTING=0 uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
 # Start the web API (separate terminal)
-cd src/web-api/NewsSearcher.Api
+cd src/web-api/Briefer.Api
 dotnet run
 
 # Start the frontend (separate terminal)
@@ -268,7 +268,7 @@ Or set `LLM_PROVIDER=openai` and `OPENAI_API_KEY=sk-...` to use OpenAI instead.
 
 ```bash
 # ASP.NET tests (29 tests)
-cd src/web-api/NewsSearcher.Api.Tests
+cd src/web-api/Briefer.Api.Tests
 dotnet test
 
 # Python tests (223 tests)

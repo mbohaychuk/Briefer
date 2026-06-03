@@ -88,7 +88,7 @@ All examples assume the demo `.env`. Replace credentials for real use.
    terminal:
    ```
    docker logs -f briefer-ml-service-1
-   docker exec briefer-postgres-1 psql -U newssearcher -d newssearcher \
+   docker exec briefer-postgres-1 psql -U briefer -d briefer \
      -c "SELECT COUNT(*) FROM articles;"
    ```
 
@@ -97,7 +97,7 @@ All examples assume the demo `.env`. Replace credentials for real use.
   frontend served from any other origin gets blocked at preflight. Manual
   workaround for poking the UI:
   `chromium --disable-web-security --user-data-dir=/tmp/cdw`.
-  Proper fix is a CORS policy in `NewsSearcher.Api`.
+  Proper fix is a CORS policy in `Briefer.Api`.
 - **30 s Polly timeout on web-api → ml-service calls.** Long ml-service
   jobs (ingestion, scoring) finish well past 30 s, so the web-api wrapper
   returns HTTP 500 even when the underlying call succeeds. Workaround: call

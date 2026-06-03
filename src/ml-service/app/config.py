@@ -8,7 +8,7 @@ class Settings:
     def __init__(self):
         self.database_url = os.environ.get(
             "DATABASE_URL",
-            "postgresql://newssearcher:changeme_dev@localhost:5432/newssearcher",
+            "postgresql://briefer:changeme_dev@localhost:5432/briefer",
         )
         self.qdrant_url = os.environ.get("QDRANT_URL", "http://localhost:6333")
         self.qdrant_collection = os.environ.get("QDRANT_COLLECTION", "articles")

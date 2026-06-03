@@ -11,7 +11,7 @@ Severity legend:
 ## 🔴 Blockers
 
 ### 1. The web-api has no CORS policy — the frontend cannot talk to it in a browser
-`src/web-api/NewsSearcher.Api/Program.cs` never calls `AddCors` / `UseCors`. The Nuxt frontend (`src/frontend/nuxt.config.ts`) calls `http://localhost:5000/api` directly from the browser. Because the frontend runs on `localhost:3000` and the API on `localhost:5000`, every request is cross-origin — and the browser blocks it at the preflight stage:
+`src/web-api/Briefer.Api/Program.cs` never calls `AddCors` / `UseCors`. The Nuxt frontend (`src/frontend/nuxt.config.ts`) calls `http://localhost:5000/api` directly from the browser. Because the frontend runs on `localhost:3000` and the API on `localhost:5000`, every request is cross-origin — and the browser blocks it at the preflight stage:
 
 ```
 Access to fetch at 'http://localhost:5000/api/auth/register' from origin
@@ -33,7 +33,7 @@ As shipped, the full product does not work in a browser. Registration, login, th
 The web-api stores per-user interest blocks in Postgres (managed via `ProfileController`, editable in the frontend's `/profile` page). But `src/ml-service/app/main.py:72` loads the scoring persona from a flat file — `profile_loader.load_from_file(settings.profiles_path)` (`profiles.json`). The scoring pipeline ranks articles against `profiles.json`, **not** against whatever the logged-in user typed into the profile editor. The `set_profile_loader` / sync wiring at `main.py:76` exists in skeleton form, but the web-api never pushes profile updates to ml-service. Net effect: editing your interests in the UI has no effect on your briefing. This is the most significant half-finished feature — and it is not obvious from the outside, which makes it worse.
 
 ### 5. 60-second HTTP timeout on the ml-service client will fire during real scoring
-`src/web-api/NewsSearcher.Api/Program.cs:51` — `client.Timeout = TimeSpan.FromSeconds(60)`. Scoring a batch through the LLM cascade against a local Ollama model routinely takes minutes (the LLM calls serialize). When this 60s timeout trips, the frontend surfaces a scoring error even though ml-service finishes the work successfully a few minutes later. The timeout should be sized to the realistic worst-case scoring duration, or the scoring call should be made asynchronous (fire-and-poll) rather than a single long request.
+`src/web-api/Briefer.Api/Program.cs:51` — `client.Timeout = TimeSpan.FromSeconds(60)`. Scoring a batch through the LLM cascade against a local Ollama model routinely takes minutes (the LLM calls serialize). When this 60s timeout trips, the frontend surfaces a scoring error even though ml-service finishes the work successfully a few minutes later. The timeout should be sized to the realistic worst-case scoring duration, or the scoring call should be made asynchronous (fire-and-poll) rather than a single long request.
 
 ## 🟡 Polish
 
